@@ -11,20 +11,22 @@ use Illuminate\Support\Facades\Log;
 class LonaController extends Controller
 {
     /**
-     * Muestra el listado de lonas del inventario.
-     * Ruta: GET /api/lonas (o entorno web)
+     * Muestra el listado de lonas del inventario (Solo las activas).
+     * Ruta: GET /api/lonas
      */
     public function index()
     {
-        // Jalamos las lonas cargando de una vez su dotación padre y sus tallas asociadas (Eager Loading)
-        // Esto evita el problema de consultas N+1 en la base de datos.
-        $lonas = Lona::with(['dotacion', 'tallas'])->get();
+        // 🔴 AQUÍ ES DONDE CAMBIA: Añadimos el where('activa', true) antes del with
+        $lonas = Lona::where('activa', true)->with(['dotacion', 'tallas'])->get();
 
         return response()->json([
             'status' => 'success',
             'data' => $lonas
         ], 200);
     }
+
+    // ... El resto de sus métodos (store, show, toggleStatus) se quedan exactamente igual ...
+
 
     /**
      * Registra una nueva lona y le asigna stock inicial por tallas.
@@ -111,6 +113,32 @@ class LonaController extends Controller
             'data' => [
                 'lona'      => $lona,
                 'historial' => $historial
+            ]
+        ], 200);
+    }
+    /**
+     * Desactiva o activa una lona (Borrado lógico / Cambio de estado).
+     * Ruta: PUT /api/lonas/{id}/toggle
+     */
+    public function toggleStatus($id)
+    {
+        // 1. Buscamos la lona. Si no existe, tira 404 de una
+        $lona = Lona::findOrFail($id);
+
+        // 2. Switcheamos el estado: si está en 1 pasa a 0, si está en 0 pasa a 1
+        $lona->activa = !$lona->activa;
+        $lona->save();
+
+        // 3. Definimos un mensaje bonito dependiendo del estado actual
+        $estadoTexto = $lona->activa ? 'activada' : 'desactivada';
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "La lona con código {$lona->codigo} ha sido {$estadoTexto} correctamente.",
+            'data' => [
+                'id' => $lona->id,
+                'codigo' => $lona->codigo,
+                'activa' => $lona->activa
             ]
         ], 200);
     }

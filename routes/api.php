@@ -20,3 +20,6 @@ Route::post('/lonas', [LonaController::class, 'store']);
 
 // 3. Ruta para ver el detalle y auditoría de una lona específica (Método GET con ID)
 Route::get('/lonas/{id}', [LonaController::class, 'show']);
+
+// Ruta para activar/desactivar la lona (Borrado lógico)
+Route::put('/lonas/{id}/toggle', [LonaController::class, 'toggleStatus']);
