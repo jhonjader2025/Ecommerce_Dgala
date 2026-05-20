@@ -26,7 +26,7 @@ return new class extends Migration
             $table->enum('rol', ['cliente', 'admin', 'super_admin'])->default('cliente');
             $table->string('telefono', 20)->nullable();
             $table->string('avatar_url', 500)->nullable();
-            $table->timestamp('eliminado_en')->nullable(); // Para el borrado lógico
+            $table->boolean('activo')->default(true); // El apagador melo para el admin
 
             // Índice de rendimiento para buscar rápido por rol
             $table->index('rol', 'idx_usuarios_rol');
