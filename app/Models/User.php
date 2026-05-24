@@ -23,6 +23,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'google_id',
+        'rol',
+        'telefono',
+        'avatar_url',
+        'activo', // ◄ Aquí está el interruptor clave
     ];
 
     /**

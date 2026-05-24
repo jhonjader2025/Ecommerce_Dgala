@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\LonaController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\PedidoController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -23,3 +26,16 @@ Route::get('/lonas/{id}', [LonaController::class, 'show']);
 
 // Ruta para activar/desactivar la lona (Borrado lógico)
 Route::put('/lonas/{id}/toggle', [LonaController::class, 'toggleStatus']);
+
+// Ruta para activar/desactivar la lona (Borrado lógico)
+Route::put('/lonas/{id}/toggle', [LonaController::class, 'toggleStatus']);
+
+// Ruta para procesar las órdenes del E-commerce
+Route::post('/pedidos', [PedidoController::class, 'store']);
+
+
+// Rutas para el control de usuarios (D'gala)
+Route::get('/usuarios', [UserController::class, 'index']);
+Route::post('/usuarios', [UserController::class, 'store']);
+Route::put('/usuarios/{id}/toggle', [UserController::class, 'toggleStatus']); 
+
