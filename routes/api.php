@@ -30,7 +30,8 @@ Route::put('/lonas/{id}/toggle', [LonaController::class, 'toggleStatus']);
 // Ruta para activar/desactivar la lona (Borrado lógico)
 Route::put('/lonas/{id}/toggle', [LonaController::class, 'toggleStatus']);
 
-// Ruta para procesar las órdenes del E-commerce
+
+// Ruta para procesar las órdenes de D'gala
 Route::post('/pedidos', [PedidoController::class, 'store']);
 
 

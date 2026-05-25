@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\Pedido;
 use App\Models\PedidoDetalle;
-use App\Models\User; // Asumiendo que su modelo de lonas/productos se llama Lona
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
