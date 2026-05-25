@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+
 class PedidoController extends Controller
 {
     /**
@@ -64,13 +65,13 @@ class PedidoController extends Controller
                     ], 400);
                 }
 
-                // 📉 Descontamos el stock en la tabla lona_tallas
+                //  Descontamos el stock en la tabla lona_tallas
                 DB::table('lona_tallas')
                     ->where('lona_id', $item['lona_id'])
                     ->where('talla', $item['talla'])
                     ->decrement('cantidad', $item['cantidad']);
 
-                // 📝 Registramos el renglón en el detalle del pedido
+                //  Registramos el renglón en el detalle del pedido
                 PedidoDetalle::create([
                     'pedido_id' => $pedido->id,
                     'lona_id' => $item['lona_id'],
@@ -103,4 +104,44 @@ class PedidoController extends Controller
             ], 500);
         }
     }
+    /**
+     * Lista todos los pedidos del e-commerce (Para el Admin)
+     * Ruta: GET /api/pedidos
+     */
+    public function index()
+    {
+        // Traemos los pedidos con la info del usuario que compró
+        $pedidos = Pedido::with('usuario:id,name,email')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $pedidos
+        ], 200);
+    }
+
+    /**
+     * Muestra el detalle completo de un solo pedido
+     * Ruta: GET /api/pedidos/{id}
+     */
+    public function show ($id)
+    {
+        // Buscamos el pedido con sus detalles y la lona que se compró en cada detalle
+        $pedido = Pedido::with(['usuario:id,name,email', 'detalles.lona'])
+            ->find($id);
+
+        if (!$pedido) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'El pedido no existe en D\'gala.'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $pedido
+        ], 200);
+    }
+    
 }

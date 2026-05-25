@@ -31,11 +31,17 @@ Route::put('/lonas/{id}/toggle', [LonaController::class, 'toggleStatus']);
 Route::put('/lonas/{id}/toggle', [LonaController::class, 'toggleStatus']);
 
 
-// Ruta para procesar las órdenes de D'gala
+// Ruta para procesar las órdenes 
 Route::post('/pedidos', [PedidoController::class, 'store']);
 
 
-// Rutas para el control de usuarios (D'gala)
+// Rutas de Pedidos 
+Route::post('/pedidos', [PedidoController::class, 'store']); // Crear pedido
+Route::get('/pedidos', [PedidoController::class, 'index']);  // Listar todos
+Route::get('/pedidos/{id}', [PedidoController::class, 'show']); // Ver uno solo
+
+
+// Rutas para el control de usuarios
 Route::get('/usuarios', [UserController::class, 'index']);
 Route::post('/usuarios', [UserController::class, 'store']);
 Route::put('/usuarios/{id}/toggle', [UserController::class, 'toggleStatus']); 
