@@ -44,5 +44,5 @@ Route::get('/pedidos/{id}', [PedidoController::class, 'show']); // Ver uno solo
 // Rutas para el control de usuarios
 Route::get('/usuarios', [UserController::class, 'index']);
 Route::post('/usuarios', [UserController::class, 'store']);
-Route::put('/usuarios/{id}/toggle', [UserController::class, 'toggleStatus']); 
+Route::put('/usuries/{id}/toggle', [UserController::class, 'toggleStatus']); 
 
