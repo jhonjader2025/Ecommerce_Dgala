@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\LonaController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LonaController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PedidoController;
-
+use App\Http\Controllers\WompiWebhookController; // <-- ¡No olvide este señor!
 
 /*
 |--------------------------------------------------------------------------
@@ -15,34 +15,57 @@ use App\Http\Controllers\PedidoController;
 | reales quedarán como "/api/lonas".
 */
 
-// 1. Ruta para listar todas las lonas (Método GET)
+// ==========================================
+// 🛡️ MÓDULO DE AUTENTICACIÓN Y WEBHOOKS (PÚBLICOS)
+// ==========================================
+
+// Ruta receptora de pagos de Wompi (Libre de candados para que la pasarela pueda avisarnos)
+Route::post('/webhooks/wompi', [WompiWebhookController::class, 'handle']);
+
+
+// ==========================================
+// 🧵 MÓDULO DE LONAS / TEXTILES
+// ==========================================
+
+// Lista todas las lonas (GET)
 Route::get('/lonas', [LonaController::class, 'index']);
 
-// 2. Ruta para registrar una nueva lona con su stock (Método POST)
+// Registra una nueva lona con su stock (POST)
 Route::post('/lonas', [LonaController::class, 'store']);
 
-// 3. Ruta para ver el detalle y auditoría de una lona específica (Método GET con ID)
+// Ve el detalle y auditoría de una lona específica (GET con ID)
 Route::get('/lonas/{id}', [LonaController::class, 'show']);
 
-// Ruta para activar/desactivar la lona (Borrado lógico)
-Route::put('/lonas/{id}/toggle', [LonaController::class, 'toggleStatus']);
-
-// Ruta para activar/desactivar la lona (Borrado lógico)
+// Activar/desactivar la lona (Borrado lógico)
 Route::put('/lonas/{id}/toggle', [LonaController::class, 'toggleStatus']);
 
 
-// Ruta para procesar las órdenes 
+// ==========================================
+// 📦 MÓDULO DE PEDIDOS / CARRITO
+// ==========================================
+
+// Crear un nuevo pedido generando referencia Wompi (POST)
 Route::post('/pedidos', [PedidoController::class, 'store']);
 
+// Listar todos los pedidos para el administrador (GET)
+Route::get('/pedidos', [PedidoController::class, 'index']);
 
-// Rutas de Pedidos 
-Route::post('/pedidos', [PedidoController::class, 'store']); // Crear pedido
-Route::get('/pedidos', [PedidoController::class, 'index']);  // Listar todos
-Route::get('/pedidos/{id}', [PedidoController::class, 'show']); // Ver uno solo
+// Ver la radiografía completa de un pedido específico (GET con ID)
+Route::get('/pedidos/{id}', [PedidoController::class, 'show']);
 
 
-// Rutas para el control de usuarios
+// ==========================================
+// 👥 MÓDULO DE CONTROL DE USUARIOS
+// ==========================================
+
+// Listar todos los usuarios del sistema (GET)
 Route::get('/usuarios', [UserController::class, 'index']);
-Route::post('/usuarios', [UserController::class, 'store']);
-Route::put('/usuries/{id}/toggle', [UserController::class, 'toggleStatus']); 
 
+// Crear o registrar un usuario internamente (POST)
+Route::post('/usuarios', [UserController::class, 'store']);
+
+// Activar/desactivar un usuario (Borrado lógico - ¡Aquí corregimos el typo de usuries!)
+Route::put('/usuarios/{id}/toggle', [UserController::class, 'toggleStatus']);
+
+// Ruta para activar la cuenta desde el enlace de correo
+Route::get('/usuarios/activar', [UserController::class, 'activar']);

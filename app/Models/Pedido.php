@@ -15,7 +15,9 @@ class Pedido extends Model
         'user_id',
         'total',
         'estado',
-        'direccion_entrega'
+        'direccion_entrega',
+        'referencia_pago', 
+        'estado_pago',
     ];
 
     /**
