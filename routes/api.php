@@ -69,3 +69,6 @@ Route::put('/usuarios/{id}/toggle', [UserController::class, 'toggleStatus']);
 
 // Ruta para activar la cuenta desde el enlace de correo
 Route::get('/usuarios/activar', [UserController::class, 'activar']);
+
+# Ruta para descargar la factura en PDF de un pedido específico
+Route::get('/pedidos/{id}/factura', [PedidoController::class, 'descargarFactura']);

@@ -74,7 +74,10 @@
             <a href="{{ $enlaceActivacion }}" class="btn">Activar mi Cuenta</a>
 
             <p>Si el botón no funciona, puedes copiar y pegar este enlace en tu navegador:</p>
-            <p style="word-break: break-all; color: #2563eb; font-size: 13px;">{{ $enlaceActivacion }}</p>
+
+            
+            #esto es para que el enlace se muestre completo aunque sea muy largo, evitando que se corte en la visualización del correo
+            <p style="word-break: break-all; color: #2563eb; font-size: 13px;">{!! $enlaceActivacion !!}</p>
         </div>
         <div class="footer">
             <p>Este es un correo automático de auditoría para D'gala Ecommerce. Por favor no lo responda.</p>

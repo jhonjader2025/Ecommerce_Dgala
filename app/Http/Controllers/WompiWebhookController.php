@@ -7,6 +7,8 @@ use App\Models\Pedido;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Mail\EnviarFacturaMail;
+use Illuminate\Support\Facades\Mail;
 
 class WompiWebhookController extends Controller
 {
@@ -29,8 +31,8 @@ class WompiWebhookController extends Controller
         $referenciaWompi = $transaction['reference']; // Ej: DGALA-1716...
         $statusWompi = $transaction['status'];       // APPROVED, DECLINED, REJECTED
 
-        // 4. Buscamos el pedido en D'gala usando esa referencia única
-        $pedido = Pedido::where('referencia_pago', $referenciaWompi)->first();
+        // 4. Buscamos el pedido usando la referencia única (Cargamos 'user' de una vez para tener el email del cliente)
+        $pedido = Pedido::with('user')->where('referencia_pago', $referenciaWompi)->first();
 
         if (!$pedido) {
             Log::warning("Webhook Wompi: No se encontró el pedido con referencia: {$referenciaWompi}");
@@ -49,13 +51,15 @@ class WompiWebhookController extends Controller
                 case 'APPROVED':
                     $pedido->estado_pago = 'aprobado';
 
-                    // TODO: ¡AQUÍ MÁS ADELANTE DISPARAMOS A MAILGUN PARA ENVIAR EL CORREO CON EL PDF!
-                    Log::info("¡Platica en mano! Pedido ID {$pedido->id} aprobado por Wompi.");
+                    // 🚀 ¡AQUÍ SE DISPARA LA MAGIA! Mandamos la factura al correo del cliente
+                    Mail::to($pedido->user->email)->send(new EnviarFacturaMail($pedido));
+
+                    Log::info("¡Platica en mano! Pedido ID {$pedido->id} aprobado por Wompi y factura enviada.");
                     break;
 
                 case 'DECLINED':
                     $pedido->estado_pago = 'declinado';
-                    // Opcional: Aquí se podría devolver el stock a 'lona_tallas' porque el pago falló
+                    // Devolvemos el stock a 'lona_tallas' porque el pago falló
                     $this->revertirStock($pedido->id);
                     break;
 

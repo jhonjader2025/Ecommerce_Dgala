@@ -8,6 +8,7 @@ use App\Models\PedidoDetalle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PedidoController extends Controller
 {
@@ -145,5 +146,20 @@ class PedidoController extends Controller
             'status' => 'success',
             'data' => $pedido
         ], 200);
+    }
+    /**
+     * Esto es para generar una facura en pdf y descargarla
+     * Ruta: GET /api/pedidos/{id}/factura
+     */
+    public function descargarFactura($id)
+    {
+        // Cargamos el pedido con el usuario que compró y los detalles de las lonas
+        $pedido = Pedido::with(['user', 'detalles'])->findOrFail($id);
+
+        // Pasamos el objeto $pedido a la vista del PDF
+        $pdf = Pdf::loadView('pdf.factura', compact('pedido'));
+
+        // 'stream' permite ver el PDF en el navegador. Si quiere descarga directa, use 'download'
+        return $pdf->stream("factura-dgala-{$pedido->id}.pdf");
     }
 }
