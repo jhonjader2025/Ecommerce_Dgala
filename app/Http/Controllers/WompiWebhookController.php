@@ -21,17 +21,47 @@ class WompiWebhookController extends Controller
         // 1. Logueamos lo que nos manda Wompi por seguridad para revisar en la etapa de desarrollo
         Log::info("Webhook de Wompi recibido:", $request->all());
 
-        // 2. Validamos que el evento sea de una transacción actualizada
+        // =========================================================================
+        // 🛡️ 2. [NUEVO] ESCUDO DE SEGURIDAD: VALIDACIÓN DE LA FIRMA DE WOMPI
+        // =========================================================================
+        $signatureData = $request->input('signature');
+
+        if (!$signatureData || !isset($signatureData['properties']) || !isset($signatureData['checksum'])) {
+            Log::warning("Webhook Wompi: Intento de acceso sospechoso sin firma.");
+            return response()->json(['message' => 'Firma ausente'], 400);
+        }
+
+        // Reconstruimos la cadena de texto uniendo los valores en el orden que exige Wompi
+        $concatenatedString = "";
+        foreach ($signatureData['properties'] as $property) {
+            // Trampa de Wompi: Ellos mandan 'transaction.id', pero en el JSON está dentro de 'data.transaction.id'
+            $path = str_starts_with($property, 'transaction.') ? 'data.' . $property : $property;
+            $concatenatedString .= $request->input($path);
+        }
+
+        // Le concatenamos al final la llave secreta para eventos que configuramos en el .env
+        $concatenatedString .= env('WOMPI_EVENTS_SECRET');
+
+        // Generamos nuestro propio hash SHA256 para comparar
+        $calculatedChecksum = hash('sha256', $concatenatedString);
+
+        if ($calculatedChecksum !== $signatureData['checksum']) {
+            Log::error("Webhook Wompi: ¡ALERTA DE FRAUDE! Las firmas no coinciden. Petición rechazada.");
+            return response()->json(['message' => 'Firma inválida'], 401);
+        }
+        // =========================================================================
+
+        // 3. Validamos que el evento sea de una transacción actualizada
         if ($request->input('event') !== 'transaction.updated') {
             return response()->json(['message' => 'Evento no manejado'], 200);
         }
 
-        // 3. Extraemos la información de la transacción que manda Wompi
+        // 4. Extraemos la información de la transacción que manda Wompi
         $transaction = $request->input('data.transaction');
         $referenciaWompi = $transaction['reference']; // Ej: DGALA-1716...
         $statusWompi = $transaction['status'];       // APPROVED, DECLINED, REJECTED
 
-        // 4. Buscamos el pedido usando la referencia única (Cargamos 'user' de una vez para tener el email del cliente)
+        // 5. Buscamos el pedido usando la referencia única
         $pedido = Pedido::with('user')->where('referencia_pago', $referenciaWompi)->first();
 
         if (!$pedido) {
@@ -44,7 +74,7 @@ class WompiWebhookController extends Controller
             return response()->json(['message' => 'El pedido ya estaba aprobado.'], 200);
         }
 
-        // 5. Evaluamos el estado que nos manda la pasarela
+        // 6. Evaluamos el estado que nos manda la pasarela
         DB::beginTransaction();
         try {
             switch ($statusWompi) {
